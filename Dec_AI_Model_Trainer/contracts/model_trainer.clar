@@ -165,3 +165,11 @@
         reputation-score: (+ (get reputation-score user-data) quality-score)
       }))
       (ok true))))
+
+;; Check if user can contribute (cooldown period)
+(define-read-only (can-contribute (user principal))
+  (let ((last-contribution (get last-contribution 
+         (default-to {last-contribution: u0, contribution-count: u0, 
+                     total-compute-contributed: u0, last-reward-claim: u0}
+         (map-get? Contributions user)))))
+    (>= (- block-height last-contribution) (var-get contribution-cooldown))))
