@@ -185,3 +185,10 @@
     (var-set minimum-stake new-minimum-stake)
     (var-set platform-fee-rate new-fee-rate)
     (ok true)))
+
+;; Update minimum contribution requirement
+(define-public (set-minimum-contribution (new-minimum uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (var-set minimum-contribution new-minimum)
+    (ok true)))
