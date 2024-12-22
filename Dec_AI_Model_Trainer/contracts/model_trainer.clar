@@ -192,3 +192,10 @@
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (var-set minimum-contribution new-minimum)
     (ok true)))
+
+;; Update reward rate
+(define-public (set-reward-rate (new-rate uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (var-set reward-rate new-rate)
+    (ok true)))
