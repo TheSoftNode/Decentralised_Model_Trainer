@@ -199,3 +199,13 @@
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (var-set reward-rate new-rate)
     (ok true)))
+
+;; Deactivate user
+(define-public (deactivate-user (user principal))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (let ((current-data (unwrap-panic (map-get? Users user))))
+      (map-set Users user (merge current-data {
+        is-active: false
+      }))
+      (ok true))))
