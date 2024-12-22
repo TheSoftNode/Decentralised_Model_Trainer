@@ -128,3 +128,14 @@
           (reward-user user amount)
           (ok true))
         err-invalid-amount)))
+
+;; Claim rewards
+(define-public (claim-rewards)
+  (let ((user tx-sender)
+        (current-rewards (get-pending-rewards user)))
+    (if (> current-rewards u0)
+        (begin
+          (try! (as-contract (stx-transfer? current-rewards contract-owner user)))
+          (update-user-rewards user current-rewards)
+          (ok current-rewards))
+        (ok u0))))
