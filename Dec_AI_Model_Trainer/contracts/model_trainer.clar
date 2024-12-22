@@ -111,3 +111,20 @@
             staked-amount: u0
           })
           (ok true)))))
+
+;; Contribute compute power
+(define-public (contribute-compute (amount uint))
+  (let ((user tx-sender))
+    (if (and (is-user-registered user)
+             (>= amount (var-get minimum-contribution)))
+        (begin
+          (map-set Contributions user {
+            last-contribution: block-height,
+            contribution-count: (+ (get-contribution-count user) u1),
+            total-compute-contributed: (+ (get total-compute-contributed (default-to {total-compute-contributed: u0} (map-get? Contributions user))) amount),
+            last-reward-claim: block-height
+          })
+          (update-user-compute-power user amount)
+          (reward-user user amount)
+          (ok true))
+        err-invalid-amount)))
