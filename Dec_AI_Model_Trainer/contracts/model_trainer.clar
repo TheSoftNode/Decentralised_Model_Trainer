@@ -155,3 +155,13 @@
 (define-read-only (get-reward-multiplier (user principal))
   (let ((staked-amount (get staked-amount (unwrap-panic (map-get? Users user)))))
     (+ u100 (/ (* staked-amount u10) (var-get minimum-stake)))))
+
+;; Update user reputation based on contribution quality
+(define-public (update-reputation (user principal) (quality-score uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (let ((user-data (unwrap-panic (map-get? Users user))))
+      (map-set Users user (merge user-data {
+        reputation-score: (+ (get reputation-score user-data) quality-score)
+      }))
+      (ok true))))
