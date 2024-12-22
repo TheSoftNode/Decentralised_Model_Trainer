@@ -139,3 +139,14 @@
           (update-user-rewards user current-rewards)
           (ok current-rewards))
         (ok u0))))
+
+;; Stake tokens to increase rewards multiplier
+(define-public (stake-tokens (amount uint))
+  (let ((user tx-sender)
+        (user-data (unwrap-panic (map-get? Users user))))
+    (asserts! (>= amount (var-get minimum-stake)) err-insufficient-stake)
+    (try! (stx-transfer? amount user contract-owner))
+    (map-set Users user (merge user-data {
+      staked-amount: (+ (get staked-amount user-data) amount)
+    }))
+    (ok true)))
