@@ -150,3 +150,8 @@
       staked-amount: (+ (get staked-amount user-data) amount)
     }))
     (ok true)))
+
+;; Get user's effective reward multiplier based on stake
+(define-read-only (get-reward-multiplier (user principal))
+  (let ((staked-amount (get staked-amount (unwrap-panic (map-get? Users user)))))
+    (+ u100 (/ (* staked-amount u10) (var-get minimum-stake)))))
