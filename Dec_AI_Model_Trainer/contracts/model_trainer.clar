@@ -72,3 +72,26 @@
   (get total-rewards (default-to 
     {compute-power: u0, total-rewards: u0, is-active: false, registration-time: u0}
     (map-get? Users user))))
+
+(define-private (update-user-rewards (user principal) (amount uint))
+  (let ((current-data (unwrap-panic (map-get? Users user))))
+    (map-set Users user (merge current-data {
+      total-rewards: (+ (get total-rewards current-data) amount)
+    }))))
+
+;; Calculate rewards for contribution
+(define-private (calculate-rewards (amount uint))
+  (* amount (var-get reward-rate)))
+
+;; Reward user for contribution
+(define-private (reward-user (user principal) (amount uint))
+  (let ((rewards (calculate-rewards amount)))
+    (update-user-rewards user rewards)
+    rewards))
+
+;; Get pending rewards
+(define-read-only (get-pending-rewards (user principal))
+  (let ((user-data (unwrap-panic (map-get? Users user))))
+    (if (get is-active user-data)
+        (calculate-rewards (get compute-power user-data))
+        u0)))
