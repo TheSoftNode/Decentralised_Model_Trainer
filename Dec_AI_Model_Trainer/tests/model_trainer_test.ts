@@ -96,4 +96,28 @@ Clarinet.test({
     },
 });
 
+// Reward Claims Tests
+Clarinet.test({
+    name: "Ensure that reward claims work correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const user1 = accounts.get("wallet_1")!;
 
+        // Setup: Register and contribute
+        let block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "register-user", [], user1.address),
+            Tx.contractCall("model_trainer", "contribute-compute",
+                [types.uint(200)],
+                user1.address
+            )
+        ]);
+
+        // Claim rewards
+        block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "claim-rewards", [], user1.address)
+        ]);
+
+        // Should return ok with some reward amount
+        assertEquals(block.receipts[0].result.startsWith('(ok u'), true);
+    },
+});
