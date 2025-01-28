@@ -162,12 +162,12 @@ Clarinet.test({
 
         // Register user
         let block = chain.mineBlock([
-            Tx.contractCall("ai-training-platform", "register-user", [], user1.address)
+            Tx.contractCall("model_trainer", "register-user", [], user1.address)
         ]);
 
         // Update reputation as owner
         block = chain.mineBlock([
-            Tx.contractCall("ai-training-platform", "update-reputation",
+            Tx.contractCall("model_trainer", "update-reputation",
                 [types.principal(user1.address), types.uint(50)],
                 deployer.address
             )
@@ -177,13 +177,51 @@ Clarinet.test({
 
         // Try updating reputation as non-owner
         block = chain.mineBlock([
-            Tx.contractCall("ai-training-platform", "update-reputation",
+            Tx.contractCall("model_trainer", "update-reputation",
                 [types.principal(user1.address), types.uint(50)],
                 user1.address
             )
         ]);
 
         assertEquals(block.receipts[0].result, '(err u100)'); // err-owner-only
+    },
+});
+
+// Read-Only Functions Tests
+Clarinet.test({
+    name: "Ensure that read-only functions return correct values",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const user1 = accounts.get("wallet_1")!;
+
+        // Register and setup user
+        let block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "register-user", [], user1.address),
+            Tx.contractCall("model_trainer", "contribute-compute",
+                [types.uint(200)],
+                user1.address
+            )
+        ]);
+
+        // Test is-user-registered
+        let result = chain.callReadOnlyFn(
+            "model_trainer",
+            "is-user-registered",
+            [types.principal(user1.address)],
+            user1.address
+        );
+
+        assertEquals(result.result, 'true');
+
+        // Test get-contribution-count
+        result = chain.callReadOnlyFn(
+            "model_trainer",
+            "get-contribution-count",
+            [types.principal(user1.address)],
+            user1.address
+        );
+
+        assertEquals(result.result, 'u1');
     },
 });
 
