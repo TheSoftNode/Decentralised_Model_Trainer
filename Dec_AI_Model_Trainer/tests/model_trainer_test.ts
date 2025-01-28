@@ -151,3 +151,39 @@ Clarinet.test({
         assertEquals(block.receipts[0].result, '(err u100)'); // err-owner-only
     },
 });
+
+// Reputation System Tests
+Clarinet.test({
+    name: "Ensure that reputation system works correctly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const user1 = accounts.get("wallet_1")!;
+
+        // Register user
+        let block = chain.mineBlock([
+            Tx.contractCall("ai-training-platform", "register-user", [], user1.address)
+        ]);
+
+        // Update reputation as owner
+        block = chain.mineBlock([
+            Tx.contractCall("ai-training-platform", "update-reputation",
+                [types.principal(user1.address), types.uint(50)],
+                deployer.address
+            )
+        ]);
+
+        assertEquals(block.receipts[0].result, '(ok true)');
+
+        // Try updating reputation as non-owner
+        block = chain.mineBlock([
+            Tx.contractCall("ai-training-platform", "update-reputation",
+                [types.principal(user1.address), types.uint(50)],
+                user1.address
+            )
+        ]);
+
+        assertEquals(block.receipts[0].result, '(err u100)'); // err-owner-only
+    },
+});
+
