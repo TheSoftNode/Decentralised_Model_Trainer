@@ -61,3 +61,39 @@ Clarinet.test({
     },
 });
 
+// Staking Tests
+Clarinet.test({
+    name: "Ensure that token staking mechanism works properly",
+    async fn(chain: Chain, accounts: Map<string, Account>)
+    {
+        const deployer = accounts.get("deployer")!;
+        const user1 = accounts.get("wallet_1")!;
+
+        // Register user
+        let block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "register-user", [], user1.address)
+        ]);
+
+        // Stake tokens - minimum stake is 1000
+        block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "stake-tokens",
+                [types.uint(1500)],
+                user1.address
+            )
+        ]);
+
+        assertEquals(block.receipts[0].result, '(ok true)');
+
+        // Try staking below minimum
+        block = chain.mineBlock([
+            Tx.contractCall("model_trainer", "stake-tokens",
+                [types.uint(500)],
+                user1.address
+            )
+        ]);
+
+        assertEquals(block.receipts[0].result, '(err u105)'); // err-insufficient-stake
+    },
+});
+
+
